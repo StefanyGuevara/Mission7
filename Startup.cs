@@ -22,7 +22,6 @@ namespace BookStore
         public Startup (IConfiguration temp)
         {
             Configuration = temp;
-            Configuration = temp;
         }
         public void ConfigureServices(IServiceCollection services)
         {
@@ -34,6 +33,11 @@ namespace BookStore
            });
 
             services.AddScoped<IBookStoreRepository, EFBookStoreRepository>();
+
+            services.AddRazorPages();
+
+            services.AddDistributedMemoryCache();
+            services.AddSession();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,14 +47,30 @@ namespace BookStore
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            // corresponds to the wwwroot
             app.UseStaticFiles();
-
+            app.UseSession();
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+
+            endpoints.MapControllerRoute("typepage",
+                "{bookType}/Page{pageNum}",
+                    new { Controller = "Home", action = "Index" });
+
+                // it shows /Page1 for the page number of the url instead of question mark at the end. 
+                endpoints.MapControllerRoute("Paging", "" +
+                    "Page{pageNum}", 
+                    new { Controller = "Home", action = "Index", pageNum = 1 });
+
+                endpoints.MapControllerRoute("type",
+                    "{bookType}",
+                    new { Controller = "Home", action = "Index", pageNum = 1 });
+
+            endpoints.MapDefaultControllerRoute();
+
+            endpoints.MapRazorPages();
             });
         }
     }
